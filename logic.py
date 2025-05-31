@@ -1,15 +1,14 @@
 import json
 import time
-import base64, io
-
+import io, base64
+from PIL import Image
+import datetime
 from config import YOUR_KEY, YOUR_SECRET
 
-from PIL import Image
 
 import requests
 
 
- 
 class FusionBrainAPI:
 
     def __init__(self, url, api_key, secret_key):
@@ -27,6 +26,7 @@ class FusionBrainAPI:
     def generate(self, prompt, pipeline, images=1, width=1024, height=1024):
         params = {
             "type": "GENERATE",
+            "style": 'PIXEL_ART',
             "numImages": images,
             "width": width,
             "height": height,
@@ -53,15 +53,14 @@ class FusionBrainAPI:
             attempts -= 1
             time.sleep(delay)
 
-def gen(path, prompt: str):
+
+def generate_image(path, text):
     api = FusionBrainAPI('https://api-key.fusionbrain.ai/', YOUR_KEY, YOUR_SECRET)
     pipeline_id = api.get_pipeline()
-    uuid = api.generate(prompt, pipeline_id)
+    uuid = api.generate(text, pipeline_id,images=1)
+    t1 = datetime.datetime.now()
     files = api.check_generation(uuid)
-    #print(files)
-    img= Image.open(io.BytesIO(base64.decodebytes(bytes(files[0], 'utf-8')))) # type: ignore
+    img = Image.open(io.BytesIO(base64.decodebytes(bytes(files[0], "utf-8"))))
     img.save(path)
-#Не забудьте указать именно ваш YOUR_KEY и YOUR_SECRET. 
-
-if __name__ == '__main__':
-    gen('image output.png', 'sun in the sky')
+    t2 = datetime.datetime.now()
+    print(t2 - t1)
